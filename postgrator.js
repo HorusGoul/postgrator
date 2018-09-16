@@ -73,7 +73,7 @@ class Postgrator extends EventEmitter {
             action: m[1],
             filename: file,
             name: name,
-            md5: checksum(sql, newline),
+            md5: this.calculateChecksum(sql, newline),
             getSql: () => sql
           })
         }
@@ -277,6 +277,16 @@ class Postgrator extends EventEmitter {
         }
         throw error
       })
+  }
+
+  calculateChecksum(sql) {
+    const { newline, validateChecksums } = this.config;
+
+    if (!validateChecksums) {
+      return '';
+    }
+
+    return checksum(sql, newline);
   }
 }
 
