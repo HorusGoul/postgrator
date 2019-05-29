@@ -67,14 +67,14 @@ class Postgrator extends EventEmitter {
           })
         } else if (m[m.length - 1] === 'js') {
           const jsModule = require(filename)
-          const sql = jsModule.generateSql()
+
           this.migrations.push({
             version: Number(m[0]),
             action: m[1],
             filename: file,
             name: name,
-            md5: this.calculateChecksum(sql, newline),
-            getSql: () => sql
+            md5: '',
+            getSql: () => jsModule.generateSql()
           })
         }
       })
@@ -192,10 +192,12 @@ class Postgrator extends EventEmitter {
         .then(() => appliedMigrations.push(migration))
         .then(() => this.emit('migration-finished', migration))
     })
-    return sequence.then(() => appliedMigrations).catch(error => {
-      error.appliedMigrations = appliedMigrations
-      throw error
-    })
+    return sequence
+      .then(() => appliedMigrations)
+      .catch(error => {
+        error.appliedMigrations = appliedMigrations
+        throw error
+      })
   }
 
   /**
@@ -280,13 +282,13 @@ class Postgrator extends EventEmitter {
   }
 
   calculateChecksum(sql) {
-    const { newline, validateChecksums } = this.config;
+    const { newline, validateChecksums } = this.config
 
     if (!validateChecksums) {
-      return '';
+      return ''
     }
 
-    return checksum(sql, newline);
+    return checksum(sql, newline)
   }
 }
 
